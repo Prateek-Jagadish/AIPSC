@@ -1,0 +1,219 @@
+/* ── Google Fonts (fallback — also loaded via HTML <link>) ── */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design Tokens ────────────────────────────────────────── */
+:root {
+  --navy:       #0A0F1C;
+  --navy-light: #1a2235;
+  --navy-card:  #0F172A;
+  --saffron:    #E8830A;
+  --saffron-lt: #F5A623;
+  --emerald:    #10B981;
+  --text:       #E2E8F0;
+  --muted:      #64748B;
+  --border:     rgba(255,255,255,0.07);
+  --glow:       rgba(232, 131, 10, 0.15);
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--saffron); border-radius: 2px; opacity: 0.4; }
+
+/* ── Typography ───────────────────────────────────────────── */
+.font-display { font-family: 'Crimson Pro', Georgia, serif; }
+.font-mono    { font-family: 'JetBrains Mono', monospace; }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.card {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover { border-color: rgba(232,131,10,0.25); }
+.card-glow  { box-shadow: 0 0 30px var(--glow); }
+
+/* ── Saffron glow button ──────────────────────────────────── */
+.btn-primary {
+  background: var(--saffron);
+  color: #000;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--saffron-lt);
+  box-shadow: 0 0 20px rgba(232,131,10,0.4);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-ghost:hover { border-color: var(--saffron); color: var(--saffron); }
+
+/* ── Input ────────────────────────────────────────────────── */
+.input {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0.65rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--saffron);
+  box-shadow: 0 0 0 3px rgba(232,131,10,0.1);
+}
+.input::placeholder { color: var(--muted); }
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+.sidebar-link.active {
+  background: rgba(232,131,10,0.1);
+  color: var(--saffron);
+  border-color: rgba(232,131,10,0.2);
+}
+
+/* ── Tag / Badge ──────────────────────────────────────────── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tag-saffron { background: rgba(232,131,10,0.15); color: var(--saffron); }
+.tag-emerald { background: rgba(16,185,129,0.15); color: var(--emerald); }
+.tag-blue    { background: rgba(99,102,241,0.15); color: #818cf8; }
+.tag-red     { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--saffron);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* ── Shimmer skeleton ─────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #1a2235 25%, #253050 50%, #1a2235 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ── Chat bubble ──────────────────────────────────────────── */
+.bubble-user {
+  background: rgba(232,131,10,0.1);
+  border: 1px solid rgba(232,131,10,0.2);
+  border-radius: 12px 12px 2px 12px;
+  padding: 0.85rem 1.1rem;
+  max-width: 80%;
+  align-self: flex-end;
+}
+.bubble-ai {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 2px;
+  padding: 0.85rem 1.1rem;
+  max-width: 88%;
+  align-self: flex-start;
+}
+
+/* ── Section divider ──────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}
+
+/* ── Noise overlay ────────────────────────────────────────── */
+.noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-fade-up { animation: fadeUp 0.35s ease forwards; }
+.animate-spin    { animation: spin 0.8s linear infinite; }
+
+/* ── Typing cursor ────────────────────────────────────────── */
+.typing::after {
+  content: '|';
+  animation: blink 0.8s step-end infinite;
+  color: var(--saffron);
+  margin-left: 2px;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }

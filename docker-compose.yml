@@ -1,0 +1,121 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UPSC Intelligence System — Docker Compose
+# Start everything:  docker-compose up --build
+# Stop:              docker-compose down
+# Reset DB:          docker-compose down -v
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL + pgvector ──────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: upsc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER:-upsc_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-upsc_pass}
+      POSTGRES_DB:       ${POSTGRES_DB:-upsc_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-upsc_user} -d ${POSTGRES_DB:-upsc_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis (Celery broker) ──────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: upsc_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: upsc_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:      postgresql+asyncpg://${POSTGRES_USER:-upsc_user}:${POSTGRES_PASSWORD:-upsc_pass}@postgres:5432/${POSTGRES_DB:-upsc_db}
+      REDIS_URL:         redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      OPENAI_API_KEY:    ${OPENAI_API_KEY}
+      APP_ENV:           ${APP_ENV:-development}
+      DEBUG:             ${DEBUG:-true}
+      STORAGE_BASE_PATH: /app/storage
+      PDF_STORAGE_PATH:  /app/storage/pdfs
+      IMAGE_STORAGE_PATH: /app/storage/images
+      NEWSPAPER_STORAGE_PATH: /app/storage/newspapers
+      TEMP_PATH:         /app/storage/temp
+    volumes:
+      - storage_data:/app/storage
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+        echo 'Waiting for DB...' &&
+        python scripts/seed_taxonomy.py &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # ── Celery Worker (background jobs) ───────────────────────────────────────
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: upsc_worker
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - redis
+    environment:
+      DATABASE_URL:      postgresql+asyncpg://${POSTGRES_USER:-upsc_user}:${POSTGRES_PASSWORD:-upsc_pass}@postgres:5432/${POSTGRES_DB:-upsc_db}
+      REDIS_URL:         redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      OPENAI_API_KEY:    ${OPENAI_API_KEY}
+      STORAGE_BASE_PATH: /app/storage
+      PDF_STORAGE_PATH:  /app/storage/pdfs
+      IMAGE_STORAGE_PATH: /app/storage/images
+      NEWSPAPER_STORAGE_PATH: /app/storage/newspapers
+      TEMP_PATH:         /app/storage/temp
+    volumes:
+      - storage_data:/app/storage
+      - ./backend:/app
+    command: celery -A app.worker worker --loglevel=info --concurrency=2
+
+  # ── React Frontend ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: upsc_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  storage_data:
